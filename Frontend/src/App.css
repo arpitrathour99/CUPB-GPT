@@ -1,0 +1,671 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+::selection {
+  background: rgba(124, 111, 239, 0.35);
+}
+
+/* ---------- App shell: fixed viewport height, real flex column ---------- */
+
+.cu-app {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background: #08090d;
+  color: #e4e4e7;
+  font-family: "Inter", system-ui, sans-serif;
+  overflow: hidden; /* the app shell itself never scrolls */
+}
+
+/* ---------- Animated aurora background ---------- */
+
+.cu-aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cu-aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  will-change: transform;
+}
+
+.cu-aurora-blob--1 {
+  width: 520px;
+  height: 520px;
+  top: -160px;
+  left: -120px;
+  background: radial-gradient(circle, rgba(124, 111, 239, 0.55), transparent 70%);
+  animation: cuDrift1 22s ease-in-out infinite;
+}
+
+.cu-aurora-blob--2 {
+  width: 460px;
+  height: 460px;
+  top: -80px;
+  right: -140px;
+  background: radial-gradient(circle, rgba(56, 132, 255, 0.4), transparent 70%);
+  animation: cuDrift2 26s ease-in-out infinite;
+}
+
+.cu-aurora-blob--3 {
+  width: 600px;
+  height: 600px;
+  bottom: -260px;
+  left: 30%;
+  background: radial-gradient(circle, rgba(140, 29, 48, 0.3), transparent 70%);
+  animation: cuDrift3 30s ease-in-out infinite;
+}
+
+@keyframes cuDrift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(60px, 40px) scale(1.1); }
+}
+@keyframes cuDrift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-50px, 60px) scale(0.95); }
+}
+@keyframes cuDrift3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-40px, -30px) scale(1.08); }
+}
+
+.cu-noise {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- Header (flex-shrink:0 — fixed size, never scrolls) ---------- */
+
+.cu-header {
+  position: relative;
+  z-index: 5;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: rgba(8, 9, 13, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cu-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.cu-brand-mark {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  background: linear-gradient(90deg, #f4f4f6, #b7adff 65%, #7c6fef);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.cu-brand-sub {
+  font-size: 12.5px;
+  color: #8b8d98;
+}
+
+.cu-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cu-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #a7a9b4;
+  padding: 6px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cu-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7c6fef;
+  box-shadow: 0 0 8px rgba(124, 111, 239, 0.9);
+  animation: cuBlink 2.2s ease-in-out infinite;
+}
+
+@keyframes cuBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.cu-newchat {
+  font-size: 13px;
+  color: #e4e4e7;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 8px 14px;
+}
+
+/* ---------- Buttons (shared) ---------- */
+
+.cu-btn {
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.cu-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.cu-btn:active {
+  transform: scale(0.97);
+}
+
+.cu-btn:focus-visible {
+  outline: 2px solid rgba(124, 111, 239, 0.6);
+  outline-offset: 2px;
+}
+
+/* ---------- Chat area ---------- */
+/* .cu-chat-wrap is the flex:1 region between header and composer.
+   .cu-main inside it is the ONE scroll container in the whole app.
+   min-height: 0 is the load-bearing line here — without it a flex child
+   refuses to shrink below its content size, so overflow-y:auto never
+   kicks in and the page grows instead of the chat area scrolling. */
+
+.cu-chat-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cu-main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.cu-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.cu-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+
+/* ---------- Welcome screen ---------- */
+
+.cu-welcome {
+  margin: auto;
+  text-align: center;
+  padding: 40px 20px 24px;
+  max-width: 580px;
+  animation: cuWelcomeIn 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cuWelcomeIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.cu-sparkle {
+  display: inline-block;
+  font-size: 24px;
+  color: #b7adff;
+  margin-bottom: 14px;
+  animation: cuSparkle 3.5s ease-in-out infinite;
+}
+
+@keyframes cuSparkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.85; }
+  50% { transform: scale(1.25) rotate(15deg); opacity: 1; }
+}
+
+.cu-title {
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  margin: 0 0 10px;
+  background: linear-gradient(120deg, #ffffff 10%, #cfc9ff 45%, #7c6fef 80%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-size: 200% auto;
+  animation: cuShine 6s linear infinite;
+}
+
+@keyframes cuShine {
+  to { background-position: 200% center; }
+}
+
+.cu-subtitle {
+  font-size: 15.5px;
+  color: #9698a4;
+  margin: 0 0 30px;
+}
+
+.cu-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.cu-chip {
+  font-family: inherit;
+  font-size: 13.5px;
+  color: #d6d7de;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 10px 16px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: cuChipIn 0.5s ease-out forwards;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+@keyframes cuChipIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cu-chip:hover {
+  background: rgba(124, 111, 239, 0.14);
+  border-color: rgba(124, 111, 239, 0.5);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(124, 111, 239, 0.15);
+}
+
+.cu-chip:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+/* ---------- Conversation ---------- */
+
+.cu-thread {
+  width: 100%;
+  max-width: 780px;
+  padding: 24px 20px 24px;
+}
+
+.cu-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: cuRowIn 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cuRowIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cu-row--user {
+  justify-content: flex-end;
+}
+
+.cu-row--assistant {
+  justify-content: flex-start;
+}
+
+.cu-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(124, 111, 239, 0.15);
+  border: 1px solid rgba(124, 111, 239, 0.35);
+  color: #b7adff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cu-avatar--pulse {
+  animation: cuPulseRing 1.6s infinite;
+}
+
+@keyframes cuPulseRing {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(124, 111, 239, 0.4); }
+  50% { box-shadow: 0 0 0 7px rgba(124, 111, 239, 0); }
+}
+
+.cu-bubble {
+  max-width: 78%;
+  border-radius: 16px;
+  color: #e4e4e7;
+  font-size: 15.5px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.cu-bubble--user {
+  padding: 4px 0;
+  background: transparent;
+  border: none;
+  text-align: right;
+}
+
+.cu-bubble--assistant {
+  padding: 4px 0;
+  background: transparent;
+}
+
+.cu-bubble--error {
+  background: rgba(220, 80, 80, 0.08);
+  border: 1px solid rgba(220, 80, 80, 0.25);
+  border-radius: 14px;
+  padding: 12px 16px;
+}
+
+.cu-error-title {
+  color: #f0a0a0;
+  font-weight: 600;
+  font-size: 14.5px;
+  margin-bottom: 4px;
+}
+
+.cu-error-text {
+  color: #c9a9a9;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.cu-retry {
+  font-size: 13px;
+  color: #f0a0a0;
+  background: rgba(220, 80, 80, 0.1);
+  border: 1px solid rgba(220, 80, 80, 0.3);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+
+/* ---------- Thinking indicator ---------- */
+
+.cu-thinking {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.cu-thinking-text {
+  font-size: 14px;
+  color: #9698a4;
+}
+
+.cu-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.cu-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #7c6fef;
+  display: inline-block;
+  animation: cuDotPulse 1.2s infinite;
+}
+
+@keyframes cuDotPulse {
+  0%, 80%, 100% { opacity: 0.25; transform: scale(0.85); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+/* ---------- New response pill ---------- */
+/* Anchored to .cu-chat-wrap (position:relative), which sits entirely above
+   the composer dock — so this never needs to know the composer's size. */
+
+.cu-new-response {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 2;
+  font-size: 13px;
+  color: #e4e4e7;
+  background: rgba(28, 29, 36, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 8px 16px;
+  backdrop-filter: blur(10px);
+  animation: cuPopIn 0.25s ease-out;
+}
+
+@keyframes cuPopIn {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ---------- Composer dock ---------- */
+/* A normal flex-shrink:0 child of .cu-app, sitting BELOW .cu-chat-wrap in
+   the document flow — not layered on top of it. This is what makes the
+   overlap bug structurally impossible: the chat area's flex:1 height is
+   computed by the browser as "whatever space is left after the header and
+   this dock", so the two can never occupy the same pixels. */
+
+.cu-composer-dock {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  padding: 14px 20px calc(14px + env(safe-area-inset-bottom, 0px));
+  background: rgba(8, 9, 13, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  transition: margin-bottom 0.18s ease;
+}
+
+.cu-composer-dock--dragging {
+  transition: none;
+}
+
+.cu-composer {
+  width: 100%;
+  max-width: 720px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cu-composer--dragging {
+  border-color: rgba(124, 111, 239, 0.55);
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55), 0 0 0 4px rgba(124, 111, 239, 0.12);
+}
+
+/* This is the ONLY focus ring for the whole composer. The textarea/button no
+   longer draw their own outline — that duplication was the "unwanted extra
+   box" that appeared while typing. */
+.cu-composer:focus-within {
+  border-color: rgba(124, 111, 239, 0.55);
+  box-shadow: 0 0 0 4px rgba(124, 111, 239, 0.14), 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.cu-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.cu-drag-handle:active {
+  cursor: grabbing;
+}
+
+.cu-drag-grip {
+  width: 36px;
+  height: 4px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.16);
+  transition: background 0.15s ease;
+}
+
+.cu-drag-handle:hover .cu-drag-grip {
+  background: rgba(124, 111, 239, 0.5);
+}
+
+.cu-composer--dragging .cu-drag-grip {
+  background: rgba(124, 111, 239, 0.8);
+}
+
+.cu-inputbox {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 2px 8px 8px 18px;
+}
+
+.cu-textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none; /* focus indication is handled by .cu-composer:focus-within */
+  color: #f0f0f2;
+  font-size: 16px;
+  font-family: inherit;
+  line-height: 1.5;
+  padding: 10px 0;
+  resize: none;
+  max-height: 200px;
+}
+
+.cu-send {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #8b8d98;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease, opacity 0.15s ease, box-shadow 0.2s ease;
+}
+
+.cu-send--active {
+  background: linear-gradient(135deg, #7c6fef, #5a4fd6);
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(124, 111, 239, 0.5);
+}
+
+.cu-send:hover:not(:disabled) {
+  transform: scale(1.06);
+}
+
+.cu-send:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.cu-send:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 640px) {
+  .cu-brand-sub {
+    display: none;
+  }
+  .cu-title {
+    font-size: 30px;
+  }
+  .cu-thread,
+  .cu-welcome {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .cu-composer {
+    max-width: none;
+  }
+  .cu-composer-dock {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .cu-welcome,
+  .cu-row,
+  .cu-chip,
+  .cu-dot,
+  .cu-avatar--pulse,
+  .cu-sparkle,
+  .cu-title,
+  .cu-status-dot,
+  .cu-aurora-blob,
+  .cu-new-response {
+    animation: none !important;
+  }
+  .cu-btn,
+  .cu-chip,
+  .cu-send,
+  .cu-composer,
+  .cu-composer-dock {
+    transition: none !important;
+  }
+}

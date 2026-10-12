@@ -1,0 +1,683 @@
+{
+  "building": "Academic Block",
+  "rooms": [
+    {
+      "room": "101",
+      "name": "Physics Classroom",
+      "floor": 1
+    },
+    {
+      "room": "102",
+      "name": "Department of Zoology",
+      "floor": 1
+    },
+    {
+      "room": "103",
+      "name": "Department of Law",
+      "floor": 1
+    },
+    {
+      "room": "104",
+      "name": "Department of Geography",
+      "floor": 1
+    },
+    {
+      "room": "105",
+      "name": "Language Lab",
+      "floor": 1
+    },
+    {
+      "room": "106",
+      "name": "Language Lab (Department of Education)",
+      "floor": 1
+    },
+    {
+      "room": "107",
+      "name": "Educational Studio (Department of Education)",
+      "floor": 1
+    },
+    {
+      "room": "108",
+      "name": "Department of Education",
+      "floor": 1
+    },
+    {
+      "room": "109",
+      "name": "ICT Laboratory",
+      "floor": 1
+    },
+    {
+      "room": "110",
+      "name": "Incharge Psychology Lab",
+      "floor": 1
+    },
+    {
+      "room": "111–112",
+      "name": "Department of Education",
+      "floor": 1
+    },
+    {
+      "room": "113",
+      "name": "AI-ML Dept. (Department of Computer Science)",
+      "floor": 1
+    },
+    {
+      "room": "114",
+      "name": "Department of History",
+      "floor": 1
+    },
+    {
+      "room": "115",
+      "name": "Department of South and Central Asian Studies",
+      "floor": 1
+    },
+    {
+      "room": "116",
+      "name": "Department of English",
+      "floor": 1
+    },
+    {
+      "room": "117",
+      "name": "Financial Administration",
+      "floor": 1
+    },
+    {
+      "room": "118",
+      "name": "Sociology",
+      "floor": 1
+    },
+    {
+      "room": "119",
+      "name": "MBA (Applied Agriculture Programme, Agriculture)",
+      "floor": 1
+    },
+    {
+      "room": "120",
+      "name": "MBA (Marketing and Tourism Management)",
+      "floor": 1
+    },
+    {
+      "room": "121",
+      "name": "Unassigned / Not labelled",
+      "floor": 1
+    },
+    {
+      "room": "122",
+      "name": "Applied Agriculture",
+      "floor": 1
+    },
+    {
+      "room": "123",
+      "name": "Department of Physical Education",
+      "floor": 1
+    },
+    {
+      "room": "130",
+      "name": "Department of Mathematics and Statistics",
+      "floor": 1
+    },
+    {
+      "room": "131",
+      "name": "Bakery",
+      "floor": 1
+    },
+    {
+      "room": "132",
+      "name": "Human Performance Laboratory (Dept. of Physical Education)",
+      "floor": 1
+    },
+    {
+      "room": "201",
+      "name": "Department of Microbiology",
+      "floor": 2
+    },
+    {
+      "room": "202",
+      "name": "Tutorial Room (Geology)",
+      "floor": 2
+    },
+    {
+      "room": "203",
+      "name": "Department of Computer Science & Technology (Classroom)",
+      "floor": 2
+    },
+    {
+      "room": "204",
+      "name": "Mass Communication & Journalism (Classroom)",
+      "floor": 2
+    },
+    {
+      "room": "205",
+      "name": "Research Laboratory (Dean School of Engineering and Technology)",
+      "floor": 2
+    },
+    {
+      "room": "206",
+      "name": "Data Science Laboratory(CST HoD Office)",
+      "floor": 2
+    },
+    {
+      "room": "207",
+      "name": "Programming Laboratory",
+      "floor": 2
+    },
+    {
+      "room": "208", 
+      "name": "Department of Computational Science (Class)",
+      "floor": 2
+    },
+    {
+      "room": "209",
+      "name": "Department of Computational Science (Lab)",
+      "floor": 2
+    },
+    {
+      "room": "210",
+      "name": "Computational [unclear] — Computational Condensed Matter Physics Lab",
+      "floor": 2
+    },
+    {
+      "room": "211",
+      "name": "Molecular Reaction Dynamics Lab",
+      "floor": 2
+    },
+    {
+      "room": "212",
+      "name": "Molecular Modelling and Drug Design Laboratory",
+      "floor": 2
+    },
+    {
+      "room": "213",
+      "name": "Cyber Security Laboratory (School of Engineering and Technology)",
+      "floor": 2
+    },
+    {
+      "room": "214",
+      "name": "Teaching Lab-I (Dept. of Computer Science)",
+      "floor": 2
+    },
+    {
+      "room": "215",
+      "name": "Department of Computer Science & Technology",
+      "floor": 2
+    },
+    {
+      "room": "216",
+      "name": "Department of Pharmaceutical Science & Natural Product (Classroom)",
+      "floor": 2
+    },
+    {
+      "room": "217–218",
+      "name": "Chemistry (Classroom)",
+      "floor": 2
+    },
+    {
+      "room": "219",
+      "name": "Pharmacology (Classroom)",
+      "floor": 2
+    },
+    {
+      "room": "220",
+      "name": "Department of Zoology (Laboratory)",
+      "floor": 2
+    },
+    {
+      "room": "221–222",
+      "name": "Teaching Lab-I (Dept. of Applied Agriculture)",
+      "floor": 2
+    },
+    {
+      "room": "223",
+      "name": "Department of Microbiology",
+      "floor": 2
+    },
+    {
+      "room": "230",
+      "name": "Environmental Science & Technology (Classroom)",
+      "floor": 2
+    },
+    {
+      "room": "231–232",
+      "name": "Pharmaceutical Science & Natural Products (Classroom)",
+      "floor": 2
+    },
+    {
+      "room": "301",
+      "name": "Department of Economic Studies (Classroom)",
+      "floor": 3
+    },
+    {
+      "room": "302",
+      "name": "Department of Biochemistry (Classroom)",
+      "floor": 3
+    },
+    {
+      "room": "303",
+      "name": "Computational Science (Classroom)",
+      "floor": 3
+    },
+    {
+      "room": "304",
+      "name": "Chemistry (Classroom)",
+      "floor": 3
+    },
+    {
+      "room": "305",
+      "name": "MSc Molecular Medicine (Classroom)",
+      "floor": 3
+    },
+    {
+      "room": "306",
+      "name": "MSc Human Genetics (Classroom)",
+      "floor": 3
+    },
+    {
+      "room": "307",
+      "name": "Complex Disease Genomics & Precision Medicine Lab",
+      "floor": 3
+    },
+    {
+      "room": "308",
+      "name": "Human Genetics Lab",
+      "floor": 3
+    },
+    {
+      "room": "309",
+      "name": "Translational Medicine & Nanotherapeutics Lab",
+      "floor": 3
+    },
+    {
+      "room": "310–312–313",
+      "name": "Human Genetics Lab",
+      "floor": 3
+    },
+    {
+      "room": "311",
+      "name": "Common Lab Human Genetics",
+      "floor": 3
+    },
+    {
+      "room": "314–315",
+      "name": "Department of Applied Agriculture",
+      "floor": 3
+    },
+    {
+      "room": "316",
+      "name": "Food Science & Technology Lab",
+      "floor": 3
+    },
+    {
+      "room": "317–318",
+      "name": "Department of Geography (Lab)",
+      "floor": 3
+    },
+    {
+      "room": "319",
+      "name": "Aerobiology & Air Pollution Lab (Dept. of Environmental Science & Technology)",
+      "floor": 3
+    },
+    {
+      "room": "320",
+      "name": "Applied Statistics Lab (Dept. of Mathematics & Statistics)",
+      "floor": 3
+    },
+    {
+      "room": "321",
+      "name": "Department of Mathematics and Statistics",
+      "floor": 3
+    },
+    {
+      "room": "322",
+      "name": "Applied Mathematics Lab (Theoretical Statistics Lab)",
+      "floor": 3
+    },
+    {
+      "room": "323",
+      "name": "Mathematical Physics Lab (Dept. of Mathematics and Statistics)",
+      "floor": 3
+    },
+    {
+      "room": "324–325",
+      "name": "PG Dept. of Mathematics & Statistics",
+      "floor": 3
+    },
+    {
+      "room": "327",
+      "name": "Department of Library and Information Science",
+      "floor": 3
+    },
+    {
+      "room": "332",
+      "name": "Department of Mathematics & Statistics (Econometry Lab)",
+      "floor": 3
+    },
+    {
+      "room": "401–402",
+      "name": "Neurobiology Lab (Dept. of Pharmacology)",
+      "floor": 4
+    },
+    {
+      "room": "403",
+      "name": "Physics Lab (School of Basic Sciences Dean)",
+      "floor": 4
+    },
+    {
+      "room": "404–405–406",
+      "name": "Physics Lab",
+      "floor": 4
+    },
+    {
+      "room": "407",
+      "name": "Teaching Lab (Zoology)",
+      "floor": 4
+    },
+    {
+      "room": "408",
+      "name": "Neurobiology Lab (Zoology)",
+      "floor": 4
+    },
+    {
+      "room": "409",
+      "name": "[unclear — text crossed out]",
+      "floor": 4
+    },
+    {
+      "room": "410",
+      "name": "Neurochemistry Lab / Neuroendocrinology Lab (Zoology)",
+      "floor": 4
+    },
+    {
+      "room": "411",
+      "name": "Zoology Lab",
+      "floor": 4
+    },
+    {
+      "room": "412",
+      "name": "Biochemistry Lab",
+      "floor": 4
+    },
+    {
+      "room": "413",
+      "name": "Nano Lab & [unclear] Lab (Biochemistry)",
+      "floor": 4
+    },
+    {
+      "room": "414",
+      "name": "Physics — [unclear] (Computational Material)",
+      "floor": 4
+    },
+    {
+      "room": "415",
+      "name": "Physics — [unclear] (Nanomaterial Lab)",
+      "floor": 4
+    },
+    {
+      "room": "416",
+      "name": "Solid State Ionics Lab (ALS) [HoD Physics]",
+      "floor": 4
+    },
+    {
+      "room": "417",
+      "name": "Cytochemical and Plant Physiology (Botany)",
+      "floor": 4
+    },
+    {
+      "room": "418",
+      "name": "Algal Biotechnology Lab",
+      "floor": 4
+    },
+    {
+      "room": "419",
+      "name": "Plant Genetic and Metabolic Engineering Lab (Botany)",
+      "floor": 4
+    },
+    {
+      "room": "420",
+      "name": "Botany",
+      "floor": 4
+    },
+    {
+      "room": "421",
+      "name": "Geology",
+      "floor": 4
+    },
+    {
+      "room": "422",
+      "name": "Geography",
+      "floor": 4
+    },
+    {
+      "room": "423",
+      "name": "Geography",
+      "floor": 4
+    },
+    {
+      "room": "424",
+      "name": "Geochem Lab (Geology)",
+      "floor": 4
+    },
+    {
+      "room": "425",
+      "name": "Metamorphic Petrology (Geology)",
+      "floor": 4
+    },
+    {
+      "room": "426",
+      "name": "Teaching Lab (Geography)",
+      "floor": 4
+    },
+    {
+      "room": "427",
+      "name": "Teaching Lab (Geology)",
+      "floor": 4
+    },
+    {
+      "room": "428",
+      "name": "Physics Lab (PSA, AIS) / Material Science Lab / Material Modelling Lab",
+      "floor": 4
+    },
+    {
+      "room": "429",
+      "name": "MSc Teaching Lab-II (Chemistry)",
+      "floor": 4
+    },
+    {
+      "room": "430",
+      "name": "Teaching Lab (Botany)",
+      "floor": 4
+    },
+    {
+      "room": "431",
+      "name": "Botany",
+      "floor": 4
+    },
+    {
+      "room": "432",
+      "name": "Plant Biology Lab (Botany)",
+      "floor": 4
+    },
+    {
+      "room": "501",
+      "name": "Pharmacognosy Lab-3 (Dept. of Pharmaceutical Science & Natural Products)",
+      "floor": 5
+    },
+    {
+      "room": "502",
+      "name": "Natural Product Chemistry Lab (Dept. of Pharmaceutical Science & Natural Products)",
+      "floor": 5
+    },
+    {
+      "room": "503",
+      "name": "Computer Aided Drug Design Lab (Lab-2) (Dept. of Pharmaceutical Science & Natural Products)",
+      "floor": 5
+    },
+    {
+      "room": "504",
+      "name": "Pharmaceutical Chemistry Lab-2 (Dept. of Pharmaceutical Science & Natural Products)",
+      "floor": 5
+    },
+    {
+      "room": "505",
+      "name": "Supramolecular Material Lab (Dept. of Chemistry)",
+      "floor": 5
+    },
+    {
+      "room": "506",
+      "name": "Environmental Management Lab (Dept. of Environmental Science & Technology)",
+      "floor": 5
+    },
+    {
+      "room": "507",
+      "name": "Teaching Lab (Dept. of Environmental Science & Technology)",
+      "floor": 5
+    },
+    {
+      "room": "508",
+      "name": "Lab (Dept. of Environmental Science & Technology)",
+      "floor": 5
+    },
+    {
+      "room": "509",
+      "name": "Bioprocess and Nanobiotechnology Lab (Dept. of Environmental Science & Technology)",
+      "floor": 5
+    },
+    {
+      "room": "510",
+      "name": "Lab (Dept. of Environmental Science & Technology)",
+      "floor": 5
+    },
+    {
+      "room": "511",
+      "name": "Instrumentation Lab (Dept. of Environmental Science & Technology)",
+      "floor": 5
+    },
+    {
+      "room": "512",
+      "name": "Bioenergy & Eco-product Lab (Dept. of Environmental Science & Technology)",
+      "floor": 5
+    },
+    {
+      "room": "513",
+      "name": "Neuropharmacology (Dept. of Pharmacology)",
+      "floor": 5
+    },
+    {
+      "room": "514",
+      "name": "DBSNP Office (Dept. of Pharmaceutical Science & Natural Products)",
+      "floor": 5
+    },
+    {
+      "room": "515",
+      "name": "HOD Office (Dept. of Pharmaceutical Science & Natural Products)",
+      "floor": 5
+    },
+    {
+      "room": "516",
+      "name": "Drug Design & Molecular Synthesis Lab (II)",
+      "floor": 5
+    },
+    {
+      "room": "517",
+      "name": "Organic Chemistry (Minor/Major [unclear]) (Dept. of Chemistry)",
+      "floor": 5
+    },
+    {
+      "room": "518",
+      "name": "Organic Synthesis and Catalysis Lab (Dept. of Chemistry)",
+      "floor": 5
+    },
+    {
+      "room": "519",
+      "name": "Inorganic and Organometallic Chemistry Lab (Dept. of Chemistry)",
+      "floor": 5
+    },
+    {
+      "room": "519",
+      "name": "Inorganic and Nanocluster Chemistry Lab (Dept. of Chemistry)",
+      "floor": 5
+    },
+    {
+      "room": "520",
+      "name": "Molecular Signaling & Drug Discovery Lab (Dept. of Biochemistry)",
+      "floor": 5
+    },
+    {
+      "room": "521",
+      "name": "Immunobiology Lab (Dept. of Biochemistry)",
+      "floor": 5
+    },
+    {
+      "room": "522",
+      "name": "Gastrointestinal Disease Lab (Dept. of Microbiology)",
+      "floor": 5
+    },
+    {
+      "room": "523",
+      "name": "Therapeutics of Infectious Disease Lab",
+      "floor": 5
+    },
+    {
+      "room": "524",
+      "name": "Plant-Microbe Interaction Lab (Biochemistry)",
+      "floor": 5
+    },
+    {
+      "room": "525",
+      "name": "Non-coding RNAs and Cancer Biology Lab (Biochemistry)",
+      "floor": 5
+    },
+    {
+      "room": "526",
+      "name": "Immunity and Inflammation Biology Lab (Microbiology)",
+      "floor": 5
+    },
+    {
+      "room": "527",
+      "name": "Teaching Lab (Microbiology)",
+      "floor": 5
+    },
+    {
+      "room": "528",
+      "name": "DST-FIST Supported Department Teaching Lab (Biochemistry)",
+      "floor": 5
+    },
+    {
+      "room": "529",
+      "name": "Organic Synthesis and Catalysis Lab (Dept. of Chemistry)",
+      "floor": 5
+    },
+    {
+      "room": "530",
+      "name": "Advance Organic Synthesis Lab (Dept. of Chemistry)",
+      "floor": 5
+    },
+    {
+      "room": "531",
+      "name": "HOD Office (Dept. of Chemistry)",
+      "floor": 5
+    },
+    {
+      "room": "532",
+      "name": "Biophysical Chemistry Lab",
+      "floor": 5
+    }
+  ],
+  "offices": [
+    {
+      "name": "Vice-Chancellor's Office",
+      "floor": "1st Floor"
+    },
+    {
+      "name": "Registrar's Office",
+      "floor": "1st Floor"
+    },
+    {
+      "name": "Dean's Office",
+      "floor": "Ground Floor"
+    },
+    {
+      "name": "Computer Centre (CC)",
+      "floor": "3rd Floor"
+    }
+  ]
+}
