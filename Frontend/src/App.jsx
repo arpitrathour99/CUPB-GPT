@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import "./App.css";
 
-const API_URL = "http://127.0.0.1:8000/ask";
+const API_URL = "/ask";
 
 const SUGGESTIONS = [
   "Where is the Computer Science department?",

@@ -2,11 +2,21 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from openai import OpenAI
 from pydantic import BaseModel
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import json
 import os
 import re
 
 app = FastAPI()
+FRONTEND_DIST = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "Frontend", "dist")
+)
+
+ASSETS_DIR = os.path.join(FRONTEND_DIST, "assets")
+
+if os.path.isdir(ASSETS_DIR):
+    app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
 
 app.add_middleware(
     CORSMiddleware,
@@ -252,6 +262,11 @@ def find_relevant_data(question):
 
 @app.get("/")
 def home():
+    index_file = os.path.join(FRONTEND_DIST, "index.html")
+
+    if os.path.isfile(index_file):
+        return FileResponse(index_file)
+
     return {"message": "CUPB-GPT Backend is working"}
 
 
@@ -313,3 +328,12 @@ USER'S QUESTION:
     return {
         "answer": response.choices[0].message.content
     }
+
+@app.get("/{full_path:path}")
+def frontend_routes(full_path: str):
+    index_file = os.path.join(FRONTEND_DIST, "index.html")
+
+    if os.path.isfile(index_file):
+        return FileResponse(index_file)
+
+    return {"detail": "Not Found"}    
