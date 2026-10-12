@@ -26,11 +26,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# LM Studio
+
 client = OpenAI(
-    base_url="http://localhost:1234/v1",
-    api_key="lm-studio"
+    base_url="https://api.groq.com/openai/v1",
+    api_key=os.environ.get("GROQ_API_KEY")
 )
+
 
 DATA_PATH = os.path.join(
     os.path.dirname(os.path.dirname(__file__)),
@@ -288,7 +289,7 @@ def ask(data: Question):
         return {"answer": relevant_data}
 
     response = client.chat.completions.create(
-        model="qwen/qwen3-vl-8b",
+        model="llama-3.3-70b-versatile",
         temperature=0,
         messages=[
             {
