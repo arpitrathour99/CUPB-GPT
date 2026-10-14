@@ -9,6 +9,11 @@ import os
 import re
 
 app = FastAPI()
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 FRONTEND_DIST = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "Frontend", "dist")
 )
