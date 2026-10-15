@@ -37,6 +37,10 @@ client = OpenAI(
     api_key=os.environ.get("GROQ_API_KEY")
 )
 
+# Unchanged model. Only the token limit below was raised (see ask_groq).
+GROQ_MODEL = "openai/gpt-oss-120b"
+MAX_REPLY_TOKENS = 1024
+
 
 DATA_PATH = os.path.join(
     os.path.dirname(os.path.dirname(__file__)),
@@ -62,16 +66,53 @@ except FileNotFoundError:
 _raw_synonyms.pop("_comment", None)
 
 
+class Question(BaseModel):
+    question: str
+
+
+# ===========================================================================
+# PART 1: TEXT HELPERS
+# ===========================================================================
+def _normalize(text):
+    """
+    Treat hyphens, slashes, ampersands, parentheses, etc. as spaces so
+    that "AI-ML", "AI & ML", "AI/ML", and "AI ML" all tokenize into the
+    identical ["ai", "ml"]. Applied to both the record text (at build
+    time) and the incoming query, so matching stays consistent.
+    """
+    return re.sub(r'[^a-z0-9\s]', ' ', text.lower())
+
+
+# Words ignored when comparing phrases, so "computer science and technology"
+# (alias) still matches "Computer Science & Technology" (room name, where
+# "&" has become a space).
+PHRASE_FILLER = {"and", "of", "the"}
+
+
+def _padded(text):
+    """
+    Normalised text with single spaces and a space at both ends, e.g.
+    " computer science technology ". A phrase such as " computer science "
+    can then be checked with a plain `in`, and it only matches whole words.
+    """
+    tokens = [t for t in _normalize(text).split() if t not in PHRASE_FILLER]
+    return " " + " ".join(tokens) + " "
+
+
+def _clean(term):
+    return " ".join(_normalize(term).split())
+
+
 # ---------------------------------------------------------------------------
-# Build a bidirectional lookup: any alias OR the canonical term itself maps
-# to the FULL set of terms that mean the same thing (canonical + all its
-# aliases). This lets a search for "CSE" also search for "computer science",
-# and a search for "computer science" also pick up "cse", "cs", etc.
+# Bidirectional synonym lookup: any alias OR the canonical term maps to the
+# FULL set of terms that mean the same thing. Terms are stored normalised so
+# "ai-ml" and "ai ml" are the same key.
 # ---------------------------------------------------------------------------
 def _build_synonym_lookup(raw):
     lookup = {}
     for canonical, aliases in raw.items():
-        group = set(a.lower() for a in aliases) | {canonical.lower()}
+        group = {_clean(a) for a in aliases} | {_clean(canonical)}
+        group.discard("")
         for term in group:
             lookup.setdefault(term, set()).update(group)
     return lookup
@@ -80,63 +121,9 @@ def _build_synonym_lookup(raw):
 SYNONYM_LOOKUP = _build_synonym_lookup(_raw_synonyms)
 
 
-def _normalize(text):
-    """
-    Treat hyphens, slashes, ampersands, parentheses, etc. as spaces so
-    that "AI-ML", "AI & ML", "AI/ML", and "AI ML" all tokenize into the
-    identical ["ai", "ml"] -- instead of "ai-ml" being one glued-together
-    token that only matches an exact hyphenated alias. Applied uniformly
-    to both the record text (at build time) and the incoming query, so
-    matching stays consistent no matter how either one is punctuated.
-    """
-    return re.sub(r'[^a-z0-9\s]', ' ', text.lower())
-
-
-def _expand_with_synonyms(words):
-    """
-    Given a list of query words/phrases, return the original words plus
-    any synonym terms they map to. Checks both single words and adjacent
-    word-pairs so multi-word aliases like "ai ml" or "comp sci" still match.
-
-    Alias phrases are run through _normalize() before splitting -- an
-    alias like "ai & ml" or "b.ed" needs its punctuation turned into
-    spaces first, or "&"/"b.ed" end up as their own garbled search
-    tokens. Stopwords are filtered back out afterwards too: an alias
-    like "computer science and technology" would otherwise reintroduce
-    "and" as a live search term, and "and" appears in enough unrelated
-    room names to add noise to every single query.
-    """
-    expanded = set(words)
-
-    for w in words:
-        if w in SYNONYM_LOOKUP:
-            for term in SYNONYM_LOOKUP[w]:
-                expanded.update(_normalize(term).split())
-
-    for i in range(len(words) - 1):
-        pair = f"{words[i]} {words[i+1]}"
-        if pair in SYNONYM_LOOKUP:
-            for term in SYNONYM_LOOKUP[pair]:
-                expanded.update(_normalize(term).split())
-
-    return [w for w in expanded if w and w not in STOPWORDS]
-
-
-class Question(BaseModel):
-    question: str
-
-
 # ---------------------------------------------------------------------------
-# Build a flat list of searchable "records" ONCE at startup.
-#
-# The old code recursively scored every nested dict in the JSON tree,
-# INCLUDING the top-level `campus` dict itself. That meant the entire
-# dataset could show up as a single "match" (since it obviously contains
-# every keyword somewhere), get ranked alongside real matches, and then
-# get sliced by the hard [:5000] cutoff -- silently truncating away the
-# real answer. Scoring only these flat, leaf-level records prevents that
-# entirely, and also keeps key names (like "departments") out of the
-# searchable text so they can't cause false-positive matches.
+# Build a flat list of searchable "records" ONCE at startup (rooms and
+# offices only, so key names like "rooms" can't cause false matches).
 # ---------------------------------------------------------------------------
 def _build_records():
     records = []
@@ -147,14 +134,14 @@ def _build_records():
             r.get("name", ""),
             r.get("floor", "")
         )
-        records.append({"type": "room", "data": r, "text": _normalize(text)})
+        records.append({"type": "room", "data": r, "text": _normalize(text), "padded": _padded(text)})
 
     for o in campus.get("offices", []):
         text = "{} {}".format(
             o.get("name", ""),
             o.get("floor", "")
         )
-        records.append({"type": "office", "data": o, "text": _normalize(text)})
+        records.append({"type": "office", "data": o, "text": _normalize(text), "padded": _padded(text)})
 
     return records
 
@@ -167,23 +154,46 @@ STOPWORDS = {
     "do", "does", "can", "could", "you", "i", "find", "give", "show",
     "what", "which", "how", "near", "about", "this", "that", "these",
     "those", "kya", "hai", "kahan", "ka", "ki", "ke", "mein", "batao",
-    # Structural words baked into almost every record's search text
-    # (e.g. "room 101 ..." / "floor 1 block A ..."). If left in, a query
-    # like "AI ML room" scores every single room equally on "room" alone
-    # and drowns out the actual signal ("ai", "ml"). The digit itself is
-    # still handled separately by the room-number regex branch above.
+    # Structural words baked into almost every record's search text.
     "room", "rooms", "block", "floor", "floors", "department",
     "departments", "facility", "located", "location",
-    # Generic type-descriptors that appear inside a huge fraction of
-    # room names ("... Lab", "... Classroom", "... Laboratory"). Same
-    # problem as "room"/"floor" above: leaving these in makes queries
-    # like "AI ML lab" score every lab in the building equally on "lab"
-    # alone, burying the actual "ai"/"ml" signal under noise.
+    # Generic type-descriptors that appear inside a huge fraction of names.
     "lab", "labs", "laboratory", "laboratories", "class", "classroom",
-    "classrooms", "office", "offices"
+    "classrooms", "office", "offices",
+    # Greetings and conversational glue (NEW). Needed now that a greeting can
+    # arrive together with a campus question, e.g. "Hi, where is CSE?".
+    "hi", "hello", "hey", "hii", "namaste", "thanks", "thank", "then",
+    "it", "also", "pls", "btao", "bataiye", "kidhar", "kaha", "kahaan",
+    "hain", "mujhe", "aur"
 }
 
 
+# ===========================================================================
+# PART 2: IS THIS A CAMPUS QUESTION?
+# ===========================================================================
+# Words that suggest the user is asking about a place on campus. If none are
+# present the message is treated as normal conversation and goes straight to
+# Groq with NO campus records. If one is present we search the campus data
+# and give the results (or "nothing found") to Groq as evidence.
+# A false alarm is harmless: the system prompt tells the model to ignore the
+# records when the message is not really about the campus.
+CAMPUS_CUES = {
+    "where", "kahan", "kaha", "kahaan", "kidhar", "kidar", "kithe",
+    "located", "location", "room", "rooms", "rm", "kamra", "kamre",
+    "floor", "floors", "lab", "labs", "laboratory", "laboratories",
+    "classroom", "classrooms", "department", "departments", "dept",
+    "office", "offices", "block", "building", "library", "centre",
+    "center", "campus", "cupb", "university",
+}
+
+
+def is_campus_question(question):
+    return any(w in CAMPUS_CUES for w in _normalize(question).split())
+
+
+# ===========================================================================
+# PART 3: CAMPUS SEARCH
+# ===========================================================================
 def _extract_room_numbers(room_field):
     """
     Room labels in the data aren't always single numbers -- e.g.
@@ -201,71 +211,200 @@ def _find_by_room_number(room_no):
     return matches
 
 
-def find_relevant_data(question):
+def _group_phrases(group):
+    phrases = []
+    for term in group:
+        p = _padded(term)
+        if p.strip():
+            phrases.append(p)
+    return phrases
+
+
+def _query_units(question):
+    """
+    Turn the question into "search units". A unit is a list of alternative
+    phrases that all mean the same thing.
+
+      "CSE"              -> one unit: computer science / cse / cs / comp sci ...
+      "computer centre"  -> one unit: computer centre / computer center / cc
+      "astrophysics"     -> one unit: just that word (no synonym known)
+
+    KEY DIFFERENCE from the old code: synonyms are matched as WHOLE PHRASES.
+    The old code split "computer science and technology" into separate words
+    and matched "science" and "technology" on their own, which dragged in
+    Environmental Science & Technology, Food Science & Technology Lab, etc.
+    """
+    words = [w for w in _normalize(question).split() if len(w) >= 2 and w not in STOPWORDS]
+
+    units = []
+    seen = set()
+    i = 0
+    while i < len(words):
+        group = None
+        step = 1
+
+        if i + 1 < len(words):
+            pair = words[i] + " " + words[i + 1]
+            if pair in SYNONYM_LOOKUP:
+                group, step = SYNONYM_LOOKUP[pair], 2
+
+        if group is None and words[i] in SYNONYM_LOOKUP:
+            group = SYNONYM_LOOKUP[words[i]]
+
+        phrases = _group_phrases(group) if group is not None else [" " + words[i] + " "]
+
+        key = tuple(sorted(phrases))
+        if key not in seen:
+            seen.add(key)
+            units.append(phrases)
+
+        i += step
+
+    return units
+
+
+MAX_RECORDS = 10
+
+
+def search_campus(question):
+    """
+    Returns (records, note).
+      records: list of campus entries (dicts) that match the question
+      note:    short text explaining a miss or a limit, or None
+    """
     q = _normalize(question)
 
     # --- Direct room-number lookup -----------------------------------
-    match = re.search(r'\b(?:room|rm)?\s*(\d{3})\b', q)
-    if match:
-        room_no = match.group(1)
-        results = _find_by_room_number(room_no)
+    room_numbers = list(dict.fromkeys(re.findall(r'\b(\d{3})\b', q)))[:5]
+    if room_numbers:
+        found = []
+        missing = []
+        for room_no in room_numbers:
+            matches = _find_by_room_number(room_no)
+            if not matches:
+                missing.append(room_no)
+            for m in matches:
+                if m not in found:
+                    found.append(m)
 
-        if results:
-            return json.dumps(results, ensure_ascii=False, indent=2)
-
-        return f"Room {room_no} is not available in the campus data."
+        note = None
+        if missing:
+            note = "No record for room {} exists in the campus data.".format(", ".join(missing))
+        return found, note
 
     # --- Keyword search over flat leaf records only -------------------
-    # Minimum length is 2, not 3 -- short abbreviations like "ai", "ml",
-    # "cs" are legitimate query terms once synonym expansion is applied,
-    # and cutting them at length 3 silently dropped them from the query.
-    raw_words = [w.strip(".,?!") for w in q.split()]
-    words = [w for w in raw_words if len(w) >= 2 and w not in STOPWORDS]
-
-    # If every word happened to be a stopword, relax the stopword filter
-    # (but keep the length filter) so the query isn't dropped entirely.
-    if not words:
-        words = [w for w in raw_words if len(w) >= 2]
-
-    if not words:
-        return "No matching campus information found."
-
-    words = _expand_with_synonyms(words)
-
-    # Word-boundary matching, not plain substring counting. This matters
-    # once synonym expansion introduces short tokens like "ai" or "ml" --
-    # a plain `in` / `.count()` substring check would match "ai" inside
-    # unrelated text like "PSA, AIS", giving false positives.
-    patterns = [re.compile(r'\b' + re.escape(w) + r'\b') for w in words if w]
+    units = _query_units(question)
+    if not units:
+        return [], "The message does not name a specific department, lab, room or office to search for."
 
     scored = []
     for rec in RECORDS:
-        score = sum(len(p.findall(rec["text"])) for p in patterns)
-        if score > 0:
-            scored.append((score, rec["data"]))
+        hits = sum(1 for unit in units if any(p in rec["padded"] for p in unit))
+        if hits > 0:
+            scored.append((hits, rec["data"]))
 
-    # Stable sort keeps original data order for ties, so e.g. all the
-    # Chemistry rooms stay together in the results instead of one being
-    # pushed out by an unrelated high-scoring item.
-    scored.sort(key=lambda x: x[0], reverse=True)
+    if not scored:
+        return [], "No matching records were found in the campus data."
 
-    selected = [item[1] for item in scored[:10]]
+    # Keep only the records that match the MOST units. For a one-unit query
+    # (the usual case) every match is kept; for longer queries this prefers
+    # records that match more of what the user typed. Data order is kept.
+    best = max(hits for hits, _ in scored)
+    top = [data for hits, data in scored if hits == best]
 
-    if not selected:
-        return "No matching campus information found."
+    note = None
+    if len(top) > MAX_RECORDS:
+        note = "{} records matched; only the first {} are shown.".format(len(top), MAX_RECORDS)
+        top = top[:MAX_RECORDS]
 
-    dumped = json.dumps(selected, ensure_ascii=False, indent=2)
-
-    # Safety cap, but by record COUNT first (above) rather than a hard
-    # character slice, so we don't cut a JSON object in half. This is
-    # just a final guard in case of unusually long department name lists.
-    if len(dumped) > 6000:
-        selected = selected[:6]
-        dumped = json.dumps(selected, ensure_ascii=False, indent=2)
-
-    return dumped
+    return top, note
 
 
+def find_relevant_data(question):
+    """Search result as text, ready to place in the prompt."""
+    records, note = search_campus(question)
+    parts = []
+
+    if records:
+        dumped = json.dumps(records, ensure_ascii=False, indent=2)
+        # Safety cap by record COUNT, so a JSON object is never cut in half.
+        if len(dumped) > 6000:
+            records = records[:6]
+            dumped = json.dumps(records, ensure_ascii=False, indent=2)
+            note = (note + " " if note else "") + "Only the first 6 records are shown."
+        parts.append(dumped)
+
+    if note:
+        parts.append("NOTE: " + note)
+
+    return "\n\n".join(parts)
+
+
+# ===========================================================================
+# PART 4: TALKING TO GROQ
+# ===========================================================================
+SYSTEM_PROMPT = """You are CUPB-GPT, a friendly AI assistant for Central University of Punjab (CUPB).
+
+You do two kinds of things.
+
+1. GENERAL CONVERSATION: greetings, small talk, thanks, questions about yourself, and general knowledge or explanations (for example "Explain what an AI chatbot is"). Answer these naturally and helpfully using your own knowledge.
+
+2. CAMPUS QUESTIONS: where a department, room, lab, floor or office is. For these you may use ONLY the entries under "CAMPUS RECORDS" in the user's message.
+
+Rules for campus questions:
+- Every room number, floor, department and office you mention must appear in the CAMPUS RECORDS. Never guess or invent one.
+- The records come from a keyword search and may include loosely related entries. Use only the entries that really answer the question. If the user asked for something specific (for example a department that is not in the records), say it is not available in the campus data. You may mention the closest records.
+- If the CAMPUS RECORDS contain only a NOTE saying nothing was found, say clearly that the campus data does not contain this information. Do not guess a location.
+- The records contain only room number, name and floor (offices have no room number). If the user asks for anything else (staff, courses, timings, contacts), say the campus data does not include it, then share the location details you do have.
+- If the message is not really about the CUPB campus, ignore the records and answer normally.
+- If a message asks about a campus place but there is no CAMPUS RECORDS section at all, say you could not find it in the campus data and suggest asking like "Where is the CSE department?".
+
+Style:
+- Reply in the language the user used: English, Hindi, or Hinglish (Hindi in English letters).
+- If the message has a greeting and a question, greet briefly, then answer the question.
+- Keep answers short and friendly. Use plain text only: no markdown headings or bold. Simple "- " bullet lines are fine.
+- When listing campus entries, give room number, name and floor, for example "- Room 215: Department of Computer Science & Technology (Floor 2)". For an office with no room number, give the name and floor.
+- If asked who you are: you are CUPB-GPT, an AI assistant for Central University of Punjab that can chat, explain topics, and help find departments, rooms, labs and offices on campus."""
+
+EMPTY_REPLY = "Sorry, I could not generate a reply just now. Please try again."
+
+
+def build_messages(question, records_text=None):
+    """
+    records_text is None  -> normal conversation (no campus records sent).
+    records_text is a str -> campus question; the text is the search result
+                             (records and/or a NOTE saying nothing matched).
+    """
+    if records_text is None:
+        user_content = question
+    else:
+        user_content = "CAMPUS RECORDS:\n\n{}\n\nUSER MESSAGE:\n\n{}".format(records_text, question)
+
+    return [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_content},
+    ]
+
+
+def ask_groq(question, records_text=None):
+    # Campus answers use temperature 0 (stick to the records). Normal
+    # conversation is allowed to sound a little more natural.
+    temperature = 0 if records_text is not None else 0.6
+
+    response = client.chat.completions.create(
+        model=GROQ_MODEL,
+        temperature=temperature,
+        messages=build_messages(question, records_text),
+        max_tokens=MAX_REPLY_TOKENS
+    )
+
+    answer = (response.choices[0].message.content or "").strip()
+    return answer or EMPTY_REPLY
+
+
+# ===========================================================================
+# PART 5: ROUTES
+# ===========================================================================
 @app.get("/")
 def home():
     index_file = os.path.join(FRONTEND_DIST, "index.html")
@@ -279,60 +418,19 @@ def home():
 @app.post("/ask")
 def ask(data: Question):
 
-    question = data.question
+    question = data.question.strip()
 
-    relevant_data = find_relevant_data(question)
+    if not question:
+        return {"answer": "Please type your question."}
 
-    # If the search genuinely found nothing, say so directly and skip the
-    # LLM call entirely. This is the fix for the "CSE department is not
-    # listed" problem: the search WAS finding the right rooms, but a
-    # small local model would sometimes second-guess correctly-retrieved
-    # data and claim it wasn't there. Removing the LLM from this path
-    # removes its ability to make that mistake, and is faster too.
-    if relevant_data.startswith("No matching campus information") or \
-       relevant_data.startswith("Room ") and relevant_data.endswith("campus data."):
-        return {"answer": relevant_data}
-
-    response = client.chat.completions.create(
-        model="openai/gpt-oss-120b",
-        temperature=0,
-        messages=[
-            {
-                "role": "system",
-                "content": """You are CUPB-GPT for Central University of Punjab.
-
-A search system has ALREADY found the campus entries below that match the user's
-question -- including resolving any abbreviation, acronym, or synonym they used
-(e.g. "CSE" -> "Computer Science", "phy" -> "Physics", "AI-ML" -> "Artificial
-Intelligence"). Your only job is to present these already-matched entries clearly.
-
-Rules:
-- The entries below ARE the answer. Do not judge whether they are relevant, and
-  do not say the information is unavailable -- if entries are listed, they exist.
-- List every entry supplied -- do not omit or filter any of them.
-- Do not invent room numbers or departments that are not present in the entries.
-- Format as bullet points: room number + name (+ floor if useful).
-- Understand Hindi, Hinglish and English, and reply in the language the user used.
-- Keep it short and direct. No preamble like "Based on the data...".
-- Only if the entries truly contain nothing relevant to the question, say so --
-  but this should be rare, since the search has already filtered for relevance."""
-            },
-            {
-                "role": "user",
-                "content": f"""MATCHED CAMPUS ENTRIES:
-
-{relevant_data}
-
-USER'S QUESTION:
-
-{question}"""
-            }
-        ],
-        max_tokens=400
-    )
+    # Campus-looking questions are searched and answered from the records.
+    # Everything else (greetings, "who are you", general knowledge) goes
+    # straight to Groq. Either way Groq is called, so "no search results"
+    # no longer blocks a normal conversation.
+    records_text = find_relevant_data(question) if is_campus_question(question) else None
 
     return {
-        "answer": response.choices[0].message.content
+        "answer": ask_groq(question, records_text)
     }
 
 @app.get("/{full_path:path}")
@@ -342,4 +440,4 @@ def frontend_routes(full_path: str):
     if os.path.isfile(index_file):
         return FileResponse(index_file)
 
-    return {"detail": "Not Found"}    
+    return {"detail": "Not Found"}
