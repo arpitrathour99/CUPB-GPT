@@ -177,6 +177,7 @@ STOPWORDS = {
 # and give the results (or "nothing found") to Groq as evidence.
 # A false alarm is harmless: the system prompt tells the model to ignore the
 # records when the message is not really about the campus.
+
 CAMPUS_CUES = {
     "where", "kahan", "kaha", "kahaan", "kidhar", "kidar", "kithe",
     "located", "location", "room", "rooms", "rm", "kamra", "kamre",
@@ -184,7 +185,10 @@ CAMPUS_CUES = {
     "classroom", "classrooms", "department", "departments", "dept",
     "office", "offices", "block", "building", "library", "centre",
     "center", "campus", "cupb", "university",
+    "bpharma", "pharmacy", "pharma", "pharmaceutics",
+    "pharmacology", "bachelor",
 }
+
 
 
 def is_campus_question(question):

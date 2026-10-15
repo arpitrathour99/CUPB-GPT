@@ -17,8 +17,20 @@
   "geography": ["geog"],
   "mathematics and statistics": ["maths", "math", "mathematics", "statistics", "stats"],
   "environmental science and technology": ["environmental science", "envs", "environment", "environmental studies"],
-  "pharmaceutical sciences and natural products": ["pharmacy", "pharma", "pharmaceutical science", "pharmaceutics"],
-  "pharmacology": ["pharmacol"],
+      
+  "pharmaceutical sciences and natural products": [
+    "pharmacy",
+    "pharma",
+    "pharmaceutical science",
+    "pharmaceutics",
+    "bpharma",
+    "b pharma",
+    "b.pharma",
+    "b pharmacy",
+    "bachelor of pharmacy",
+    "bpharma classroom",
+    "bpharma class"
+  ],
   "human genetics and molecular medicine": ["genetics", "molecular medicine", "human genetics"],
   "applied science": ["applied sciences"],
 
