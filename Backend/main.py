@@ -5,8 +5,21 @@ from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import json
+import logging
 import os
 import re
+from dotenv import load_dotenv
+load_dotenv()
+
+# Faculty / staff contact lookup (Data/contacts.json). Works whether the app is started as
+# `uvicorn main:app` (from Backend/) or `uvicorn Backend.main:app` (from the project root).
+try:
+    from contact_search import ContactSearch
+except ImportError:
+    try:
+        from Backend.contact_search import ContactSearch
+    except ImportError:
+        ContactSearch = None
 
 app = FastAPI()
 
@@ -54,6 +67,12 @@ SYNONYMS_PATH = os.path.join(
     "Synonyms.json"
 )
 
+CONTACTS_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)),
+    "Data",
+    "contacts.json"
+)
+
 with open(DATA_PATH, "r", encoding="utf-8") as f:
     campus = json.load(f)
 
@@ -64,6 +83,18 @@ except FileNotFoundError:
     _raw_synonyms = {}
 
 _raw_synonyms.pop("_comment", None)
+
+# Contact search is optional: if the module or contacts.json is missing or broken,
+# the app still starts and everything else works exactly as before.
+contact_search = None
+if ContactSearch is not None:
+    try:
+        contact_search = ContactSearch(CONTACTS_PATH, SYNONYMS_PATH)
+        if not contact_search.available:
+            contact_search = None
+    except Exception as exc:
+        logging.getLogger("cupb.contacts").warning("contact search disabled: %s", type(exc).__name__)
+        contact_search = None
 
 
 class Question(BaseModel):
@@ -368,6 +399,7 @@ Style:
 - If the message has a greeting and a question, greet briefly, then answer the question.
 - Keep answers short and friendly. Use plain text only: no markdown headings or bold. Simple "- " bullet lines are fine.
 - When listing campus entries, give room number, name and floor, for example "- Room 215: Department of Computer Science & Technology (Floor 2)". For an office with no room number, give the name and floor.
+- Answer a location question with just the matching entries. Do not add a closing sentence that explains, restates or justifies the result (for example, never write "That is the location for the X department according to the campus data"). Only mention a limitation when the records really do not contain what was asked.
 - If asked who you are: you are CUPB-GPT, an AI assistant for Central University of Punjab that can chat, explain topics, and help find departments, rooms, labs and offices on campus."""
 
 EMPTY_REPLY = "Sorry, I could not generate a reply just now. Please try again."
@@ -426,6 +458,14 @@ def ask(data: Question):
 
     if not question:
         return {"answer": "Please type your question."}
+
+    # Contact questions (professor / HOD / staff phone, email, department) are answered
+    # directly from Data/contacts.json and never sent to Groq, so numbers and email
+    # addresses cannot be invented. Anything else returns None and continues below.
+    if contact_search is not None:
+        contact_result = contact_search.handle_question(question)
+        if contact_result is not None:
+            return {"answer": contact_result["answer"]}
 
     # Campus-looking questions are searched and answered from the records.
     # Everything else (greetings, "who are you", general knowledge) goes

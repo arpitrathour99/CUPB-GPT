@@ -22,6 +22,12 @@ const THINKING_STATUSES = [
 const MAX_TEXTAREA_HEIGHT = 200;
 const SCROLL_BOTTOM_THRESHOLD = 120;
 const MAX_DRAG_OFFSET_RATIO = 0.4; // composer can be dragged up to 40% of viewport height
+// Instant answers (e.g. professor contact lookups) come back in a few milliseconds. Keep the
+// loading indicator up for at least this long so it behaves the same as slower campus answers.
+const MIN_THINKING_MS = 700; // NEW
+// If the server never answers (cold start, network drop), stop waiting and show the error row
+// instead of leaving the loading indicator on forever.
+const REQUEST_TIMEOUT_MS = 90000; // NEW
 
 let idCounter = 0;
 const nextId = () => `m${++idCounter}`;
@@ -45,6 +51,9 @@ export default function App() {
   const scrollRef = useRef(null);
   const textareaRef = useRef(null);
   const dragStartRef = useRef(null);
+  // Id of the newest request. A reply from an older request (e.g. one sent before "New Chat")
+  // must not hide the loading indicator of a newer request that is still pending.
+  const requestIdRef = useRef(0); // NEW
 
   // Rotate the thinking status message while waiting on the API
   useEffect(() => {
@@ -126,26 +135,42 @@ export default function App() {
   }, [messages, isThinking]);
 
   const callApi = async (userQuestion) => {
+    const requestId = ++requestIdRef.current; // NEW
+    // Starts now; awaited after the reply arrives. A slow reply has already outlasted it (no extra wait).
+    const minVisible = new Promise((resolve) => setTimeout(resolve, MIN_THINKING_MS)); // NEW
+    const controller = new AbortController(); // NEW
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS); // NEW
+
+    // Shown immediately, on every kind of query.
     setIsThinking(true);
+
+    let reply; // NEW
     try {
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: userQuestion }),
+        signal: controller.signal, // NEW
       });
 
       if (!response.ok) throw new Error("Server error");
 
       const data = await response.json();
-      setMessages((prev) => [...prev, { id: nextId(), role: "assistant", text: data.answer }]);
+      reply = { id: nextId(), role: "assistant", text: data.answer }; // CHANGED (was setMessages)
     } catch (err) {
-      setMessages((prev) => [
-        ...prev,
-        { id: nextId(), role: "error", text: "Something went wrong.", question: userQuestion },
-      ]);
+      reply = { id: nextId(), role: "error", text: "Something went wrong.", question: userQuestion }; // CHANGED
     } finally {
-      setIsThinking(false);
+      clearTimeout(timeoutId); // CHANGED (setIsThinking(false) moved below)
     }
+
+    // Fast replies (e.g. contact lookups): let the indicator be seen instead of flashing.
+    await minVisible; // NEW
+
+    // A newer request (or New Chat) took over while this one was pending: leave the UI alone.
+    if (requestId !== requestIdRef.current) return; // NEW
+
+    setMessages((prev) => [...prev, reply]); // CHANGED
+    setIsThinking(false); // CHANGED (moved from finally)
   };
 
   const sendMessage = (text) => {
@@ -166,6 +191,7 @@ export default function App() {
   };
 
   const startNewChat = () => {
+    requestIdRef.current += 1; // NEW: ignore any reply that is still on its way
     setMessages([]);
     setHasStarted(false);
     setQuestion("");
